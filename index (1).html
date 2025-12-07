@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rivo - Should I Buy or Keep Renting?</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Karla:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --navy-deep: #1a2332;
+      --navy-mid: #2d3e50;
+      --navy-light: #3d5168;
+      --terracotta: #d4745f;
+      --terracotta-light: #e89882;
+      --cream: #faf8f4;
+      --cream-dark: #f0ede6;
+      --text-dark: #1a2332;
+      --text-light: #faf8f4;
+      --shadow: rgba(26, 35, 50, 0.15);
+      --glow: rgba(212, 116, 95, 0.2);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Karla', sans-serif;
+      background: linear-gradient(135deg, var(--cream) 0%, var(--cream-dark) 100%);
+      color: var(--text-dark);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* Background decoration */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      right: -20%;
+      width: 70%;
+      height: 100%;
+      background: radial-gradient(circle, var(--terracotta) 0%, transparent 70%);
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -30%;
+      left: -15%;
+      width: 60%;
+      height: 80%;
+      background: radial-gradient(circle, var(--navy-mid) 0%, transparent 70%);
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .app-container {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 60px 30px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .header {
+      margin-bottom: 50px;
+      animation: fadeInDown 0.8s ease-out;
+    }
+    
+    .logo {
+      font-family: 'Crimson Text', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--navy-deep);
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+    
+    .tagline {
+      font-size: 1.1rem;
+      color: var(--navy-mid);
+      font-weight: 300;
+      max-width: 500px;
+    }
+    
+    .tagline strong {
+      color: var(--terracotta);
+      font-weight: 600;
+    }
+    
+    .chat-container {
+      flex: 1;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px var(--shadow);
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      animation: fadeInUp 0.8s ease-out 0.2s both;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .chat-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--terracotta) 0%, var(--terracotta-light) 100%);
+    }
+    
+    .messages-wrapper {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 30px;
+      padding-right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    
+    .messages-wrapper::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .messages-wrapper::-webkit-scrollbar-track {
+      background: var(--cream-dark);
+      border-radius: 10px;
+    }
+    
+    .messages-wrapper::-webkit-scrollbar-thumb {
+      background: var(--terracotta);
+      border-radius: 10px;
+    }
+    
+    .message {
+      display: flex;
+      gap: 16px;
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    .message-assistant {
+      align-items: flex-start;
+    }
+    
+    .message-user {
+      align-items: flex-end;
+      flex-direction: row-reverse;
+    }
+    
+    .message-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+      animation: scaleIn 0.3s ease-out;
+    }
+    
+    .message-assistant .message-avatar {
+      background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy-mid) 100%);
+      color: var(--text-light);
+    }
+    
+    .message-user .message-avatar {
+      background: linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta-light) 100%);
+      color: white;
+    }
+    
+    .message-content {
+      max-width: 70%;
+      padding: 18px 22px;
+      border-radius: 18px;
+      line-height: 1.6;
+      animation: slideIn 0.4s ease-out;
+    }
+    
+    .message-assistant .message-content {
+      background: var(--cream);
+      color: var(--text-dark);
+      border-bottom-left-radius: 4px;
+    }
+    
+    .message-user .message-content {
+      background: var(--navy-deep);
+      color: var(--text-light);
+      border-bottom-right-radius: 4px;
+    }
+    
+    .message-content strong {
+      font-weight: 600;
+      color: var(--terracotta);
+    }
+    
+    .message-user .message-content strong {
+      color: var(--terracotta-light);
+    }
+    
+    .loading-indicator {
+      display: flex;
+      gap: 6px;
+      padding: 18px 22px;
+      background: var(--cream);
+      border-radius: 18px;
+      border-bottom-left-radius: 4px;
+      width: fit-content;
+    }
+    
+    .loading-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--terracotta);
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+    
+    .loading-dot:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+    
+    .loading-dot:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+    
+    .input-area {
+      display: flex;
+      gap: 12px;
+      padding: 20px;
+      background: var(--cream-dark);
+      border-radius: 16px;
+      align-items: flex-end;
+    }
+    
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+    
+    .input-field {
+      width: 100%;
+      padding: 14px 18px;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      font-family: 'Karla', sans-serif;
+      font-size: 1rem;
+      background: white;
+      color: var(--text-dark);
+      outline: none;
+      transition: all 0.3s ease;
+      resize: none;
+      max-height: 120px;
+      min-height: 50px;
+    }
+    
+    .input-field:focus {
+      border-color: var(--terracotta);
+      box-shadow: 0 0 0 4px var(--glow);
+    }
+    
+    .send-button {
+      padding: 14px 28px;
+      background: linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta-light) 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Karla', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      height: 50px;
+    }
+    
+    .send-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px var(--glow);
+    }
+    
+    .send-button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    
+    .send-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .recommendation-card {
+      background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy-mid) 100%);
+      color: white;
+      padding: 32px;
+      border-radius: 16px;
+      margin: 20px 0;
+      box-shadow: 0 10px 40px var(--shadow);
+      animation: scaleIn 0.6s ease-out;
+    }
+    
+    .recommendation-title {
+      font-family: 'Crimson Text', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--terracotta-light);
+    }
+    
+    .recommendation-content {
+      line-height: 1.7;
+    }
+    
+    .recommendation-content ul {
+      margin: 16px 0;
+      padding-left: 24px;
+    }
+    
+    .recommendation-content li {
+      margin: 8px 0;
+    }
+    
+    .cta-button {
+      display: inline-block;
+      padding: 16px 32px;
+      background: var(--terracotta);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Karla', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+    
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px var(--glow);
+    }
+    
+    .progress-bar {
+      height: 4px;
+      background: var(--cream-dark);
+      border-radius: 10px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--terracotta) 0%, var(--terracotta-light) 100%);
+      transition: width 0.5s ease;
+    }
+    
+    .disclaimer {
+      font-size: 0.85rem;
+      color: var(--navy-light);
+      text-align: center;
+      margin-top: 20px;
+      line-height: 1.5;
+      opacity: 0.7;
+    }
+    
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    @keyframes bounce {
+      0%, 80%, 100% {
+        transform: scale(0);
+      }
+      40% {
+        transform: scale(1);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .app-container {
+        padding: 30px 20px;
+      }
+      
+      .chat-container {
+        padding: 25px 20px;
+      }
+      
+      .logo {
+        font-size: 2rem;
+      }
+      
+      .message-content {
+        max-width: 85%;
+      }
+      
+      .recommendation-card {
+        padding: 24px;
+      }
+      
+      .recommendation-title {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // Conversation state management
+    const CONVERSATION_STAGES = {
+      OPENING: 'opening',
+      DISCOVERY: 'discovery',
+      EXPLORATION: 'exploration',
+      CALCULATION: 'calculation',
+      RECOMMENDATION: 'recommendation',
+      CONVERSION: 'conversion'
+    };
+
+    // User context tracking
+    function App() {
+      const [messages, setMessages] = useState([
+        {
+          role: 'assistant',
+          content: "Hi! I'm Rivo, and I'm here to help you figure out if buying property or continuing to rent makes more sense for you. This isn't about pushing you either way - it's about understanding your specific situation and giving you clarity. What's bringing you here today?"
+        }
+      ]);
+      const [userInput, setUserInput] = useState('');
+      const [isLoading, setIsLoading] = useState(false);
+      const [conversationStage, setConversationStage] = useState(CONVERSATION_STAGES.OPENING);
+      const [userContext, setUserContext] = useState({});
+      const [progress, setProgress] = useState(0);
+      const messagesEndRef = useRef(null);
+
+      const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      };
+
+      useEffect(() => {
+        scrollToBottom();
+      }, [messages]);
+
+      // Simulated AI response system (in production, this calls Claude API)
+      const getAIResponse = async (userMessage, context, stage) => {
+        // This is a sophisticated rules + AI hybrid system
+        // In production, this would call Claude API with structured prompts
+        
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API delay
+
+        const lowerMessage = userMessage.toLowerCase();
+        
+        // Intent classification
+        if (stage === CONVERSATION_STAGES.OPENING) {
+          if (lowerMessage.includes('rent') && (lowerMessage.includes('increase') || lowerMessage.includes('went up') || lowerMessage.includes('expensive'))) {
+            setProgress(15);
+            setConversationStage(CONVERSATION_STAGES.DISCOVERY);
+            return {
+              content: "I totally understand that frustration - rent increases are one of the biggest pain points for expats in the UAE. Let me ask you a few questions to see if buying could be a better path for you.\n\nFirst, how long have you been in the UAE, and how long are you planning to stay?",
+              stage: CONVERSATION_STAGES.DISCOVERY
+            };
+          } else if (lowerMessage.includes('buy') || lowerMessage.includes('purchase') || lowerMessage.includes('buying')) {
+            setProgress(15);
+            setConversationStage(CONVERSATION_STAGES.DISCOVERY);
+            return {
+              content: "Great! So you're thinking about buying. Before we dive into the numbers, I want to understand your situation better - that way I can give you guidance that actually fits YOUR life, not just generic advice.\n\nHow long have you been living in the UAE?",
+              stage: CONVERSATION_STAGES.DISCOVERY
+            };
+          } else if (lowerMessage.includes('not sure') || lowerMessage.includes('unsure') || lowerMessage.includes('confused')) {
+            setProgress(15);
+            setConversationStage(CONVERSATION_STAGES.DISCOVERY);
+            return {
+              content: "That's completely normal - this is a big decision and there's no one-size-fits-all answer. Let's figure it out together by looking at your specific situation.\n\nTo start: What's your current housing situation? Are you renting right now?",
+              stage: CONVERSATION_STAGES.DISCOVERY
+            };
+          } else {
+            setProgress(10);
+            setConversationStage(CONVERSATION_STAGES.DISCOVERY);
+            return {
+              content: "I appreciate you sharing that. To give you the best guidance, I need to understand your situation a bit better. Let's start with the basics:\n\nAre you currently renting or in some other housing situation?",
+              stage: CONVERSATION_STAGES.DISCOVERY
+            };
+          }
+        }
+
+        if (stage === CONVERSATION_STAGES.DISCOVERY) {
+          // Collecting key information
+          if (!context.currentRent && (lowerMessage.match(/\d{4,6}/) || lowerMessage.includes('rent'))) {
+            const rentMatch = lowerMessage.match(/\d{4,6}/);
+            if (rentMatch) {
+              const newContext = { ...context, currentRent: parseInt(rentMatch[0]) };
+              setUserContext(newContext);
+              setProgress(30);
+              return {
+                content: `Got it - you're paying ${rentMatch[0]} AED/month in rent. That's helpful context.\n\nNext question: What's your monthly income? (Don't worry, this stays completely confidential - I just need it to calculate what you can afford.)`,
+                stage: CONVERSATION_STAGES.DISCOVERY
+              };
+            }
+          }
+
+          if (!context.monthlyIncome && lowerMessage.match(/\d{4,6}/)) {
+            const incomeMatch = lowerMessage.match(/\d{4,6}/);
+            if (incomeMatch) {
+              const income = parseInt(incomeMatch[0]);
+              const newContext = { ...context, monthlyIncome: income };
+              setUserContext(newContext);
+              setProgress(45);
+              
+              if (income < 15000) {
+                return {
+                  content: `Thanks for sharing. I want to be honest with you: most UAE banks require a minimum monthly income of 15,000 AED for expat mortgages. At ${income} AED/month, you might not qualify for traditional mortgages right now.\n\nThat said, you have a couple of options:\n1. Wait and save while your income grows\n2. Consider co-applying with a partner or family member\n3. Look at rent-to-own arrangements\n\nWould any of these work for you?`,
+                  stage: CONVERSATION_STAGES.EXPLORATION
+                };
+              }
+
+              return {
+                content: `Perfect - with ${income} AED/month income, you're above the minimum threshold banks look for. Now let's talk about savings.\n\nHow much do you have saved up right now that you could put toward a down payment? (Remember, you'll still need to keep some emergency funds)`,
+                stage: CONVERSATION_STAGES.DISCOVERY
+              };
+            }
+          }
+
+          if (!context.savings && lowerMessage.match(/\d{4,7}/)) {
+            const savingsMatch = lowerMessage.match(/\d{4,7}/);
+            if (savingsMatch) {
+              const savings = parseInt(savingsMatch[0]);
+              const newContext = { ...context, savings: savings };
+              setUserContext(newContext);
+              setProgress(60);
+              
+              return {
+                content: `Okay, you have ${savings.toLocaleString()} AED saved. That's good to know.\n\nLast couple of questions: How long are you planning to stay in the UAE? This is really important because buying only makes sense if you'll be here long enough to make it worthwhile.`,
+                stage: CONVERSATION_STAGES.DISCOVERY
+              };
+            }
+          }
+
+          if (!context.plannedStay && (lowerMessage.includes('year') || lowerMessage.includes('long'))) {
+            const newContext = { ...context, plannedStay: userMessage };
+            setUserContext(newContext);
+            setProgress(75);
+            setConversationStage(CONVERSATION_STAGES.CALCULATION);
+            
+            return {
+              content: "Great! I think I have enough information now to run the numbers and give you a clear recommendation. Let me calculate what makes sense for your situation...\n\n*analyzing your affordability and comparing buy vs rent scenarios*",
+              stage: CONVERSATION_STAGES.CALCULATION
+            };
+          }
+
+          // Fallback discovery question
+          setProgress(Math.min(progress + 5, 70));
+          return {
+            content: "Thanks for that information. To make sure I give you the best advice, can you tell me a bit more about your current situation? Specifically:\n\n- What's your monthly income?\n- How much rent do you currently pay?\n- How much have you saved?",
+            stage: CONVERSATION_STAGES.DISCOVERY
+          };
+        }
+
+        if (stage === CONVERSATION_STAGES.CALCULATION) {
+          // Calculate and provide recommendation
+          setProgress(90);
+          setConversationStage(CONVERSATION_STAGES.RECOMMENDATION);
+          
+          const { currentRent = 7500, monthlyIncome = 20000, savings = 150000, plannedStay = "5 years" } = context;
+          
+          // Mortgage calculation
+          const maxDTI = 0.50;
+          const maxMonthlyPayment = monthlyIncome * maxDTI;
+          const interestRate = 0.048;
+          const termYears = 25;
+          
+          // Simplified calculation
+          const maxLoanAmount = maxMonthlyPayment * 12 * termYears / (1 + interestRate * termYears / 2);
+          const downPaymentPct = 0.20;
+          const maxPropertyPrice = maxLoanAmount / (1 - downPaymentPct);
+          const requiredDownPayment = maxPropertyPrice * downPaymentPct;
+          const monthlyPayment = maxMonthlyPayment;
+          
+          // 5-year comparison
+          const rentTotal5yr = currentRent * 12 * 5 * 1.1; // Assuming 10% avg increase
+          const buyTotal5yr = (monthlyPayment * 12 * 5) + requiredDownPayment;
+          const equityBuilt = maxLoanAmount * 0.15; // Rough estimate
+          
+          const shouldBuy = savings >= requiredDownPayment * 0.8 && plannedStay.includes('5') || plannedStay.includes('long');
+          
+          const recommendation = shouldBuy
+            ? `## My Recommendation: I think buying makes sense for you\n\n**Here's why:**\n\n• You can afford a property around **${Math.floor(maxPropertyPrice / 1000)}K AED** (requiring ${Math.floor(requiredDownPayment / 1000)}K AED down payment)\n• Your monthly payment would be around **${Math.floor(monthlyPayment)} AED** - similar to what you're already paying in rent\n• Over 5 years, you'd build roughly **${Math.floor(equityBuilt / 1000)}K AED in equity** instead of just paying rent\n• You have enough saved to cover the down payment ${savings >= requiredDownPayment ? 'fully' : 'with some additional saving'}\n\n**Things to consider:**\n\n• You'll need to keep some savings for emergencies (aim for 6 months of expenses)\n• Property maintenance costs (typically 2-3% of property value annually)\n• Your visa situation - make sure you're comfortable with the commitment\n\n**Next steps:**\n\nIf you'd like to move forward, I can connect you with one of our mortgage consultants who can get you specific bank offers and walk you through the process. They'll help you find the right property and secure the best rates.\n\nWant me to set that up?`
+            : `## My Recommendation: I think you should keep renting for now\n\n**Here's why:**\n\n• You'd need around **${Math.floor(requiredDownPayment / 1000)}K AED** for down payment, but you have ${Math.floor(savings / 1000)}K saved\n• The gap is about **${Math.floor((requiredDownPayment - savings) / 1000)}K AED** - achievable but requires more saving\n• Based on your timeline, you might benefit from waiting 6-12 months to build up savings\n\n**What I suggest:**\n\n• Save aggressively for the next 6-12 months (target: ${Math.floor((requiredDownPayment - savings) / 12000)}K/month)\n• Look for ways to reduce current rent costs in the meantime\n• Consider properties in the ${Math.floor(maxPropertyPrice * 0.7 / 1000)}K-${Math.floor(maxPropertyPrice * 0.8 / 1000)}K range to lower down payment requirement\n\n**The good news:**\n\nYou're not far off! With some focused saving, you could be ready to buy within a year. That's actually better than rushing in without proper financial buffer.\n\nWould you like me to create a personalized savings plan to get you there?`;
+          
+          return {
+            content: recommendation,
+            stage: CONVERSATION_STAGES.RECOMMENDATION,
+            isRecommendation: true
+          };
+        }
+
+        if (stage === CONVERSATION_STAGES.RECOMMENDATION) {
+          setProgress(100);
+          setConversationStage(CONVERSATION_STAGES.CONVERSION);
+          
+          if (lowerMessage.includes('yes') || lowerMessage.includes('sure') || lowerMessage.includes('okay')) {
+            return {
+              content: "Excellent! I'll connect you with one of our expert mortgage consultants.\n\nTo get you matched with the right person, I just need a few quick details:\n\n• Your full name\n• Phone number\n• Email address\n• Best time to reach you\n\nThey'll contact you within 24 hours with personalized mortgage options and next steps. Sound good?",
+              stage: CONVERSATION_STAGES.CONVERSION
+            };
+          } else if (lowerMessage.includes('no') || lowerMessage.includes('not yet')) {
+            return {
+              content: "No problem at all! This is a big decision and it's smart to take your time.\n\nIs there anything else you'd like to know? I'm happy to answer questions about:\n\n• Specific areas/properties\n• The mortgage process\n• Costs involved\n• Anything else on your mind\n\nOr if you're all set, feel free to come back anytime - your conversation is saved and we can pick up where we left off!",
+              stage: CONVERSATION_STAGES.RECOMMENDATION
+            };
+          }
+        }
+
+        // Default response
+        return {
+          content: "I want to make sure I understand what you're asking. Could you elaborate a bit more?",
+          stage: stage
+        };
+      };
+
+      const handleSendMessage = async () => {
+        if (!userInput.trim() || isLoading) return;
+
+        const newUserMessage = {
+          role: 'user',
+          content: userInput
+        };
+
+        setMessages(prev => [...prev, newUserMessage]);
+        setUserInput('');
+        setIsLoading(true);
+
+        try {
+          const response = await getAIResponse(userInput, userContext, conversationStage);
+          
+          const newAssistantMessage = {
+            role: 'assistant',
+            content: response.content,
+            isRecommendation: response.isRecommendation
+          };
+
+          setMessages(prev => [...prev, newAssistantMessage]);
+          if (response.stage) {
+            setConversationStage(response.stage);
+          }
+        } catch (error) {
+          const errorMessage = {
+            role: 'assistant',
+            content: "I apologize, but I'm having trouble processing that right now. Could you try rephrasing?"
+          };
+          setMessages(prev => [...prev, errorMessage]);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      const handleKeyPress = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleSendMessage();
+        }
+      };
+
+      return (
+        <div className="app-container">
+          <div className="header">
+            <div className="logo">Rivo</div>
+            <div className="tagline">
+              Buy or Rent? Get <strong>clarity</strong> in 5 minutes.
+            </div>
+          </div>
+
+          <div className="chat-container">
+            {progress > 0 && (
+              <div className="progress-bar">
+                <div className="progress-fill" style={{ width: `${progress}%` }}></div>
+              </div>
+            )}
+
+            <div className="messages-wrapper">
+              {messages.map((message, index) => (
+                <div 
+                  key={index} 
+                  className={`message message-${message.role}`}
+                >
+                  <div className="message-avatar">
+                    {message.role === 'assistant' ? 'R' : 'Y'}
+                  </div>
+                  <div className="message-content">
+                    {message.isRecommendation ? (
+                      <div dangerouslySetInnerHTML={{ 
+                        __html: message.content
+                          .replace(/## (.*)/g, '<div class="recommendation-title">$1</div>')
+                          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                          .replace(/• (.*)/g, '<li>$1</li>')
+                          .replace(/\n\n/g, '</p><p>')
+                          .replace(/^/, '<p>')
+                          .replace(/$/, '</p>')
+                      }} />
+                    ) : (
+                      message.content.split('\n').map((line, i) => (
+                        <p key={i} style={{ marginBottom: i < message.content.split('\n').length - 1 ? '12px' : '0' }}>
+                          {line}
+                        </p>
+                      ))
+                    )}
+                  </div>
+                </div>
+              ))}
+              
+              {isLoading && (
+                <div className="message message-assistant">
+                  <div className="message-avatar">R</div>
+                  <div className="loading-indicator">
+                    <div className="loading-dot"></div>
+                    <div className="loading-dot"></div>
+                    <div className="loading-dot"></div>
+                  </div>
+                </div>
+              )}
+              
+              <div ref={messagesEndRef} />
+            </div>
+
+            <div className="input-area">
+              <div className="input-wrapper">
+                <textarea
+                  className="input-field"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Type your message..."
+                  disabled={isLoading}
+                  rows={1}
+                />
+              </div>
+              <button
+                className="send-button"
+                onClick={handleSendMessage}
+                disabled={!userInput.trim() || isLoading}
+              >
+                Send
+              </button>
+            </div>
+
+            <div className="disclaimer">
+              This conversation provides general guidance, not financial advice. Final decisions should be made with a qualified mortgage consultant.
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
